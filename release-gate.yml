@@ -1,0 +1,39 @@
+name: TDS GA7 Release Gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege, matching the policy this workflow tests.
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: "TDS identity: 23f1002246@ds.study.iitm.ac.in"
+        run: echo "23f1002246@ds.study.iitm.ac.in"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest httpx
+
+      - name: Test release-gate implementation
+        run: pytest -v tests/test_release_gate.py
